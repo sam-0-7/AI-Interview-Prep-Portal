@@ -1,0 +1,126 @@
+@model AIInterviewPortal.Models.Domain.ApplicationUser
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_Layout";
+}
+
+<div class="page-container" style="max-width:880px">
+
+    <!-- Profile Header Card -->
+    <div class="glass-card animate-in" style="padding:0;overflow:hidden;margin-bottom:1.25rem">
+        <!-- Amber header strip -->
+        <div style="height:6px;background:linear-gradient(90deg, var(--gold-dim), var(--gold), var(--ember))"></div>
+
+        <div style="padding:2rem 2.25rem;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1.5rem">
+            <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap">
+                <!-- Hexagonal Avatar -->
+                <div style="position:relative">
+                    <div style="width:78px;height:88px;background:linear-gradient(135deg, var(--gold-dim), var(--gold));clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:var(--bg-base);font-family:'Sora',sans-serif;box-shadow:0 0 24px rgba(255,186,20,0.25)">
+                        @Model.FullName?[0].ToString().ToUpper()
+                    </div>
+                    <div style="position:absolute;bottom:4px;right:2px;width:20px;height:20px;border-radius:50%;background:var(--success);border:2px solid var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:0.55rem;color:var(--bg-base);box-shadow:0 0 8px var(--success)" title="Verified">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+
+                <!-- User Info -->
+                <div>
+                    <h1 class="page-title" style="font-size:1.5rem;margin-bottom:0.25rem">@Model.FullName</h1>
+                    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:0.3rem">
+                        <i class="fas fa-envelope" style="margin-right:5px;color:var(--text-muted);font-size:0.75rem"></i>@Model.Email
+                    </p>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text-muted)">📍 India</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text-muted)">📅 Joined @Model.CreatedAt.ToString("MMM yyyy")</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--gold)">◈ Active Learner</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-outline" onclick="alert('Edit Profile is not configured in this demo.')">
+                <i class="fas fa-pen-to-square"></i> Edit Profile
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="glass-card animate-in stagger-1"
+         style="padding:1.25rem 2rem;margin-bottom:1.25rem;display:grid;grid-template-columns:repeat(4, 1fr);gap:0;text-align:center">
+        <div style="padding:0.5rem;border-right:1px solid var(--border)">
+            <div style="font-size:1.7rem;font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif;letter-spacing:-0.03em">24</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-top:3px">Sessions</div>
+        </div>
+        <div style="padding:0.5rem;border-right:1px solid var(--border)">
+            <div style="font-size:1.7rem;font-weight:700;color:var(--success);font-family:'Sora',sans-serif;letter-spacing:-0.03em">85%</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-top:3px">Avg Score</div>
+        </div>
+        <div style="padding:0.5rem;border-right:1px solid var(--border)">
+            <div style="font-size:1.7rem;font-weight:700;color:var(--teal);font-family:'Sora',sans-serif;letter-spacing:-0.03em">240</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-top:3px">Questions</div>
+        </div>
+        <div style="padding:0.5rem">
+            <div style="font-size:1.7rem;font-weight:700;color:var(--ember);font-family:'Sora',sans-serif;letter-spacing:-0.03em">🔥 7</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-top:3px">Day Streak</div>
+        </div>
+    </div>
+
+    <!-- Tech Proficiency Bars -->
+    <div class="glass-card animate-in stagger-2" style="padding:1.75rem 2rem;margin-bottom:1.25rem">
+        <div class="section-eyebrow" style="margin-bottom:1.25rem">
+            <i class="fas fa-signal"></i> Tech Proficiency
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+            @{
+                var skills = new[] {
+                    new { Name = "C#", Pct = 90, Color = "var(--success)" },
+                    new { Name = "Python", Pct = 75, Color = "var(--teal)" },
+                    new { Name = "SQL", Pct = 82, Color = "var(--gold)" },
+                    new { Name = "React", Pct = 68, Color = "var(--ember)" },
+                };
+            }
+            @foreach (var skill in skills)
+            {
+                <div>
+                    <div class="skill-bar-header">
+                        <span style="font-weight:600;color:var(--text-primary)">@skill.Name</span>
+                        <span style="color:@skill.Color">@skill.Pct%</span>
+                    </div>
+                    <div class="skill-bar-bg">
+                        <div class="skill-bar-fill" style="width:@skill.Pct%;background:@skill.Color"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="glass-card animate-in stagger-3" style="padding:1.75rem 2rem">
+        <div class="section-eyebrow" style="margin-bottom:1.5rem">
+            <i class="fas fa-award"></i> Achievements
+        </div>
+
+        <div class="badges-container">
+            <div class="hexagon-badge" style="--accent:#f59e0b" title="Quick Learner">
+                <i class="fas fa-star" style="color:#ffe066;filter:drop-shadow(0 0 5px #f59e0b)"></i>
+                <div class="badge-title-txt">Quick<br>Learner</div>
+            </div>
+            <div class="hexagon-badge" style="--accent:#22d37a" title="Consistent">
+                <i class="fas fa-shield-halved" style="color:#6ee7b7;filter:drop-shadow(0 0 5px #22d37a)"></i>
+                <div class="badge-title-txt">Consistent</div>
+            </div>
+            <div class="hexagon-badge" style="--accent:#38bdf8" title="Top Performer">
+                <i class="fas fa-ribbon" style="color:#93c5fd;filter:drop-shadow(0 0 5px #38bdf8)"></i>
+                <div class="badge-title-txt">Top<br>Performer</div>
+            </div>
+            <div class="hexagon-badge" style="--accent:#FFBA14" title="AI Master">
+                <i class="fas fa-brain" style="color:var(--gold);filter:drop-shadow(0 0 5px var(--gold))"></i>
+                <div class="badge-title-txt">AI Master</div>
+            </div>
+            <div class="hexagon-badge" style="--accent:#FF6B2B" title="Streak King">
+                <i class="fas fa-fire" style="color:var(--ember);filter:drop-shadow(0 0 5px var(--ember))"></i>
+                <div class="badge-title-txt">Streak<br>King</div>
+            </div>
+        </div>
+    </div>
+</div>

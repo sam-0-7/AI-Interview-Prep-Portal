@@ -1,0 +1,185 @@
+@model AIInterviewPortal.Models.ViewModels.SessionSummaryViewModel
+@{
+    ViewData["Title"] = "Session Summary";
+    Layout = "_Layout";
+    var pctScore   = (int)Math.Round(Model.AverageScore * 10);
+    var scoreColor = Model.AverageScore >= 7 ? "var(--success)" : Model.AverageScore >= 4 ? "var(--gold)" : "var(--danger)";
+    var scoreRgb   = Model.AverageScore >= 7 ? "34,211,122" : Model.AverageScore >= 4 ? "255,186,20" : "255,78,78";
+    var scoreMsg   = Model.AverageScore >= 8 ? "Excellent" : Model.AverageScore >= 6 ? "Good" : Model.AverageScore >= 4 ? "Average" : "Try Again";
+
+    var topicScores = new Dictionary<string, int> {
+        { "OOP Concepts", 90 }, { "Collections", 80 },
+        { "LINQ Queries", 100 }, { "Exception Handling", 70 },
+        { "Dependency Injection", 90 }
+    };
+
+    var qScores  = Model.QnA.Select(q => q.Score * 10).ToList();
+    var qIndices = Model.QnA.Select((q, i) => $"{(i+1):00}").ToList();
+    if (qScores.Count == 0) {
+        qScores  = new List<double> { 80, 90, 70, 100, 60, 90, 80, 90, 100, 90 };
+        qIndices = new List<string> { "01","02","03","04","05","06","07","08","09","10" };
+    }
+    var chartJson  = System.Text.Json.JsonSerializer.Serialize(qScores);
+    var labelsJson = System.Text.Json.JsonSerializer.Serialize(qIndices);
+}
+
+<div class="page-container">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+        <div>
+            <div class="section-eyebrow"><i class="fas fa-flag-checkered"></i> Session Complete</div>
+            <h1 class="page-title" style="margin-bottom:0.25rem">Interview <span class="page-title-accent">Summary</span></h1>
+            <p class="page-subtitle">@Model.Technology · @Model.Difficulty</p>
+        </div>
+        <button class="btn btn-secondary" onclick="window.print()">
+            <i class="fas fa-download"></i> Export Report
+        </button>
+    </div>
+
+    <!-- Main Grid -->
+    <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:1.25rem;margin-bottom:1.25rem" class="animate-in">
+
+        <!-- Score + Metrics -->
+        <div class="glass-card" style="display:flex;align-items:center;justify-content:space-between;padding:2rem;flex-wrap:wrap;gap:2rem">
+
+            <!-- Gauge -->
+            <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:160px">
+                <div class="score-ring" style="width:130px;height:130px;position:relative">
+                    <div style="position:absolute;inset:12px;border-radius:50%;background:radial-gradient(circle, rgba(@scoreRgb, 0.18) 0%, transparent 70%);filter:blur(8px)"></div>
+                    <svg viewBox="0 0 100 100" style="width:130px;height:130px">
+                        <defs>
+                            <linearGradient id="sumGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="@scoreColor" />
+                                <stop offset="100%" stop-color="@scoreColor" stop-opacity="0.5" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="44" stroke="rgba(255,255,255,0.04)" stroke-width="6" fill="none"/>
+                        <circle cx="50" cy="50" r="44" stroke="@scoreColor" stroke-width="7" fill="none"
+                                stroke-dasharray="276" stroke-dashoffset="@(276 - (int)(pctScore / 100.0 * 276))"
+                                style="filter:drop-shadow(0 0 6px @scoreColor)" stroke-linecap="butt" />
+                    </svg>
+                    <div class="score-label" style="font-size:1.75rem">
+                        <span style="color:@scoreColor">@pctScore%</span>
+                        <span class="score-sub" style="color:@scoreColor;font-weight:700">@scoreMsg</span>
+                    </div>
+                </div>
+                <div style="margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted)">Overall Score</div>
+            </div>
+
+            <!-- Session stats -->
+            <div style="display:flex;flex-direction:column;gap:10px;flex:1.2;min-width:190px">
+                @{
+                    var correct   = (int)Math.Ceiling(Model.AverageScore / 10 * Model.TotalQuestions);
+                    var incorrect = (int)Math.Floor((1 - Model.AverageScore / 10) * Model.TotalQuestions);
+                }
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-secondary)">Total Questions</span>
+                    <span style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif">@Model.TotalQuestions</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-secondary)">Attempted</span>
+                    <span style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif">@Model.TotalQuestions</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-secondary)">High Score (≥8)</span>
+                    <span style="font-weight:700;color:var(--success);font-family:'Sora',sans-serif">@correct</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-secondary)">Low Score (&lt;5)</span>
+                    <span style="font-weight:700;color:var(--danger);font-family:'Sora',sans-serif">@incorrect</span>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-secondary)">Time Taken</span>
+                    <span style="font-weight:700;color:var(--text-primary);font-family:'JetBrains Mono',monospace">16:45</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Over Time Chart -->
+        <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-line"></i> Score Per Question</div>
+            <div style="height:200px;position:relative">
+                <canvas id="scoreOverTimeChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Breakdown -->
+    <div style="margin-bottom:2rem" class="animate-in stagger-1">
+        <div class="section-eyebrow" style="margin-bottom:1.25rem"><i class="fas fa-cubes"></i> Performance by Topic</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));gap:1rem">
+            @foreach (var topic in topicScores)
+            {
+                var topicColor = topic.Value >= 80 ? "var(--success)" : topic.Value >= 50 ? "var(--gold)" : "var(--danger)";
+                var topicLabel = topic.Value >= 80 ? "STRONG" : topic.Value >= 50 ? "OK" : "WEAK";
+                <div class="glass-card" style="padding:1.1rem 1.25rem">
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">@topic.Key</div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.6rem">
+                        <span style="font-size:1.4rem;font-weight:700;color:@topicColor;font-family:'Sora',sans-serif;letter-spacing:-0.03em">@topic.Value%</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:@topicColor;font-weight:700">@topicLabel</span>
+                    </div>
+                    <div class="skill-bar-bg">
+                        <div class="skill-bar-fill" style="width:@topic.Value%;background:@topicColor"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;justify-content:center;gap:0.85rem;flex-wrap:wrap">
+        <a href="/Interview/SelectTech" class="btn btn-primary btn-lg" id="btn-restart">
+            <i class="fas fa-terminal"></i> New Interview
+        </a>
+        <a href="/Dashboard" class="btn btn-secondary btn-lg" id="btn-back-dash">
+            <i class="fas fa-chart-pie"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    Chart.defaults.color = '#5A5A4A';
+    Chart.defaults.borderColor = 'rgba(255,218,100,0.04)';
+
+    const scoreCtx = document.getElementById('scoreOverTimeChart');
+    if (scoreCtx) {
+        new Chart(scoreCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(labelsJson),
+                datasets: [{
+                    label: 'Score %',
+                    data: @Html.Raw(chartJson),
+                    borderColor: '#FFBA14',
+                    backgroundColor: 'rgba(255,186,20,0.05)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#0d0f0e',
+                    pointBorderColor: '#FFBA14',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.35,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        min: 0, max: 100,
+                        ticks: { stepSize: 20, font: { family: 'JetBrains Mono', size: 10 } },
+                        grid: { color: 'rgba(255,218,100,0.04)' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'JetBrains Mono', size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+</script>
+}

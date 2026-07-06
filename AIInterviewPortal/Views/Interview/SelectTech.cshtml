@@ -1,0 +1,102 @@
+@model AIInterviewPortal.Models.ViewModels.SelectTechViewModel
+@{
+    ViewData["Title"] = "Select Technology";
+    Layout = "_Layout";
+}
+
+<div class="page-container">
+    <div class="page-header" style="text-align:center;margin-bottom:2rem">
+        <div class="section-eyebrow" style="justify-content:center">Step 1 of 2</div>
+        <h1 class="page-title" style="margin-bottom:0.3rem">Select a <span class="page-title-accent">Technology</span></h1>
+        <p class="page-subtitle">Choose your target technology to begin an AI-powered mock interview</p>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="tech-filter-bar" style="justify-content:center;margin-bottom:2rem">
+        <button type="button" class="filter-btn active" onclick="filterTechs('all', this)">ALL</button>
+        <button type="button" class="filter-btn" onclick="filterTechs('frontend', this)">
+            <i class="fas fa-palette" style="margin-right:4px"></i>Frontend
+        </button>
+        <button type="button" class="filter-btn" onclick="filterTechs('backend', this)">
+            <i class="fas fa-server" style="margin-right:4px"></i>Backend
+        </button>
+        <button type="button" class="filter-btn" onclick="filterTechs('database', this)">
+            <i class="fas fa-database" style="margin-right:4px"></i>Database
+        </button>
+        <button type="button" class="filter-btn" onclick="filterTechs('cloud', this)">
+            <i class="fas fa-cloud" style="margin-right:4px"></i>Cloud
+        </button>
+    </div>
+
+    <!-- Tech Grid -->
+    <div class="tech-grid" style="max-width:1080px;margin:0 auto 2rem" id="tech-grid">
+        @foreach (var tech in Model.Technologies)
+        {
+            var category = tech.Name switch
+            {
+                "HTML" or "CSS" or "JavaScript" or "React" or "Angular" or "TypeScript" => "frontend",
+                ".NET" or "Java" or "Python" or "C#" or "Node.js" or "C++" => "backend",
+                "SQL" or "MongoDB" => "database",
+                "AWS" => "cloud",
+                _ => "other"
+            };
+
+            var qCount = tech.Name switch
+            {
+                ".NET" => "120 Qs", "Java" => "150 Qs", "Python" => "130 Qs",
+                "JavaScript" => "110 Qs", "SQL" => "100 Qs", "C++" => "115 Qs",
+                "HTML" => "125 Qs", "CSS" => "140 Qs", "React" => "150 Qs",
+                "Angular" => "110 Qs", "Node.js" => "130 Qs", "TypeScript" => "120 Qs",
+                "MongoDB" => "105 Qs", "AWS" => "140 Qs", _ => "100 Qs"
+            };
+
+            <div class="tech-card animate-in" id="tech-@tech.TechId" data-category="@category"
+                 onclick="goToDifficulty(@tech.TechId)">
+                <div class="check-badge"><i class="fas fa-check"></i></div>
+
+                <span class="tech-card-icon">
+                    <i class="@tech.IconClass" style="color:@tech.Color"></i>
+                </span>
+
+                <div class="tech-card-name">@tech.Name</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);margin-bottom:1rem;letter-spacing:0.04em">@qCount</div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">@category</span>
+                    <a href="/Interview/SelectDifficulty?techId=@tech.TechId"
+                       class="btn btn-primary btn-sm"
+                       onclick="event.stopPropagation()">
+                        Start <i class="fas fa-arrow-right" style="font-size:0.7em"></i>
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function goToDifficulty(id) {
+        window.location.href = `/Interview/SelectDifficulty?techId=${id}`;
+    }
+
+    function filterTechs(category, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tech-card').forEach(card => {
+            if (category === 'all' || card.dataset.category === category) {
+                card.style.display = '';
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(8px)';
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.28s ease, transform 0.28s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 40);
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+}

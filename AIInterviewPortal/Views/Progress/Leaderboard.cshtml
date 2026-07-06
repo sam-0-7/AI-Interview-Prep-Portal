@@ -1,0 +1,143 @@
+@{
+    ViewData["Title"] = "Leaderboard";
+    Layout = "_Layout";
+    var currentUser = ViewBag.CurrentUserName;
+}
+
+<div class="page-container" style="max-width:860px">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+        <div>
+            <div class="section-eyebrow"><i class="fas fa-trophy"></i> Rankings</div>
+            <h1 class="page-title" style="margin-bottom:0.25rem">Leaderboard</h1>
+            <p class="page-subtitle">Compete with developers preparing for top tech interviews</p>
+        </div>
+        <select style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-size:0.75rem;padding:7px 14px;outline:none;cursor:pointer">
+            <option>This Month</option>
+            <option>All Time</option>
+        </select>
+    </div>
+
+    <!-- Top 3 Podium -->
+    <div style="display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:1rem;margin-bottom:2rem;align-items:end">
+        <!-- Rank 2 -->
+        <div class="glass-card animate-in" style="padding:1.5rem;text-align:center;border-color:rgba(192,192,192,0.2)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:#94a3b8;font-weight:700;margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.08em">SILVER</div>
+            <div style="width:52px;height:52px;border-radius:6px;background:#94a3b8;color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;margin:0 auto 0.75rem;font-family:'Sora',sans-serif">NV</div>
+            <div style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif;font-size:0.95rem">Neha Verma</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--success);font-weight:700;margin-top:4px">93%</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);margin-top:2px">28 sessions</div>
+        </div>
+
+        <!-- Rank 1 -->
+        <div class="glass-card animate-in" style="padding:1.75rem;text-align:center;border-color:rgba(255,186,20,0.3);background:rgba(255,186,20,0.03);box-shadow:0 0 24px rgba(255,186,20,0.08)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--gold);font-weight:700;margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.08em">🥇 GOLD</div>
+            <div style="width:60px;height:60px;border-radius:6px;background:var(--gold);color:var(--bg-base);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.25rem;margin:0 auto 0.75rem;font-family:'Sora',sans-serif;box-shadow:0 0 16px rgba(255,186,20,0.4)">AP</div>
+            <div style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif;font-size:1.05rem">Arjun Patel</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.85rem;color:var(--success);font-weight:700;margin-top:4px">96%</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);margin-top:2px">32 sessions</div>
+        </div>
+
+        <!-- Rank 3 -->
+        <div class="glass-card animate-in" style="padding:1.5rem;text-align:center;border-color:rgba(205,127,50,0.2)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:#CD7F32;font-weight:700;margin-bottom:0.75rem;text-transform:uppercase;letter-spacing:0.08em">BRONZE</div>
+            <div style="width:52px;height:52px;border-radius:6px;background:#CD7F32;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;margin:0 auto 0.75rem;font-family:'Sora',sans-serif">SK</div>
+            <div style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif;font-size:0.95rem">Sahil Khan</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--success);font-weight:700;margin-top:4px">91%</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);margin-top:2px">30 sessions</div>
+        </div>
+    </div>
+
+    <!-- Rankings Table -->
+    <div class="glass-card animate-in stagger-1" style="padding:0;overflow:hidden;margin-bottom:1.5rem">
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border)">
+            <div class="chart-title" style="margin-bottom:0"><i class="fas fa-list-ol"></i> Full Rankings</div>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width:10%;text-align:center">RANK</th>
+                    <th style="width:42%">USER</th>
+                    <th style="width:22%;text-align:center">SESSIONS</th>
+                    <th style="width:26%;text-align:center">AVG SCORE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align:center"><span class="rank-badge rank-1">1</span></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:28px;height:28px;border-radius:4px;background:var(--gold);color:var(--bg-base);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;font-family:'Sora',sans-serif">AP</div>
+                            <span style="font-weight:700;color:var(--text-primary)">Arjun Patel</span>
+                        </div>
+                    </td>
+                    <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.82rem">32</td>
+                    <td style="text-align:center;font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace">96%</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center"><span class="rank-badge rank-2">2</span></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:28px;height:28px;border-radius:4px;background:#94a3b8;color:#000;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;font-family:'Sora',sans-serif">NV</div>
+                            <span style="font-weight:700;color:var(--text-primary)">Neha Verma</span>
+                        </div>
+                    </td>
+                    <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.82rem">28</td>
+                    <td style="text-align:center;font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace">93%</td>
+                </tr>
+                <tr>
+                    <td style="text-align:center"><span class="rank-badge rank-3">3</span></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:28px;height:28px;border-radius:4px;background:#CD7F32;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;font-family:'Sora',sans-serif">SK</div>
+                            <span style="font-weight:700;color:var(--text-primary)">Sahil Khan</span>
+                        </div>
+                    </td>
+                    <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.82rem">30</td>
+                    <td style="text-align:center;font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace">91%</td>
+                </tr>
+
+                <!-- Current User Highlighted -->
+                <tr class="row-highlight">
+                    <td style="text-align:center">
+                        <span class="rank-badge" style="background:rgba(255,186,20,0.12);color:var(--gold);border:1px solid rgba(255,186,20,0.25)">4</span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:28px;height:28px;border-radius:4px;background:var(--gold);color:var(--bg-base);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;font-family:'Sora',sans-serif">
+                                @currentUser[0].ToString().ToUpper()
+                            </div>
+                            <span style="font-weight:700;color:var(--text-primary)">
+                                @currentUser
+                                <span style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--gold);margin-left:5px">(You)</span>
+                            </span>
+                        </div>
+                    </td>
+                    <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.82rem;color:var(--text-primary)">24</td>
+                    <td style="text-align:center;font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace">85%</td>
+                </tr>
+
+                <tr>
+                    <td style="text-align:center">
+                        <span class="rank-badge" style="background:var(--bg-base);color:var(--text-muted);border:1px solid var(--border)">5</span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div style="width:28px;height:28px;border-radius:4px;background:var(--bg-base);color:var(--text-muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem;font-family:'Sora',sans-serif">PS</div>
+                            <span style="font-weight:600;color:var(--text-secondary)">Priya Singh</span>
+                        </div>
+                    </td>
+                    <td style="text-align:center;font-family:'JetBrains Mono',monospace;font-size:0.82rem">20</td>
+                    <td style="text-align:center;font-weight:700;color:var(--success);font-family:'JetBrains Mono',monospace">82%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer CTA -->
+    <div style="text-align:center">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--text-muted)">
+            Complete more sessions to climb the rankings <span style="color:var(--gold)">◈</span>
+        </p>
+    </div>
+</div>

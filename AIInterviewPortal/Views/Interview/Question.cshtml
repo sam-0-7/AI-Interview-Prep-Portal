@@ -1,0 +1,162 @@
+@model AIInterviewPortal.Models.ViewModels.QuestionViewModel
+@{
+    ViewData["Title"] = $"Question {Model.CurrentNumber}";
+    Layout = "_Layout";
+    var progress = (double)Model.CurrentNumber / Model.TotalQuestions * 100;
+}
+
+<div class="page-container" style="max-width:860px">
+
+    <!-- Header row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem">
+        <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:8px;height:8px;border-radius:2px;background:@Model.TechColor;box-shadow:0 0 8px @Model.TechColor"></div>
+            <span style="font-family:'Sora',sans-serif;font-weight:700;font-size:1rem;color:var(--text-primary)">@Model.Technology</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text-muted)">·</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">@Model.Difficulty</span>
+        </div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-muted)">
+            Q <span style="color:var(--gold);font-weight:700">@Model.CurrentNumber</span> / @Model.TotalQuestions
+        </span>
+    </div>
+
+    <!-- Timer + Progress bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em">
+            <i class="fas fa-clock" style="color:var(--gold);margin-right:4px"></i>Time Remaining
+        </span>
+        <span id="countdown-timer" style="font-family:'JetBrains Mono',monospace;font-size:0.88rem;font-weight:700;color:var(--gold)">25:00</span>
+    </div>
+    <div class="interview-progress-bar" style="margin-bottom:2rem">
+        <div class="interview-progress-fill" id="timer-bar-fill" style="width:100%"></div>
+    </div>
+
+    <!-- Question Card -->
+    <div class="question-card animate-in">
+
+        <!-- Question badge -->
+        <div class="question-badge">
+            <i class="fas fa-terminal"></i>
+            Question @Model.CurrentNumber · @Model.Difficulty
+        </div>
+
+        <p class="question-text">@Model.QuestionText</p>
+
+        <!-- Answer Form -->
+        <form method="post" action="/Interview/SubmitAnswer" id="answer-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="sessionId"     value="@Model.SessionId" />
+            <input type="hidden" name="questionId"    value="@Model.QuestionId" />
+            <input type="hidden" name="currentNumber" value="@Model.CurrentNumber" />
+
+            <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="user-answer">Your Answer</label>
+                <textarea id="user-answer" class="form-control form-control-noicon" name="userAnswer"
+                          placeholder="Type your answer here... use // for code comments"
+                          style="border-radius:var(--radius-sm) var(--radius-sm) 0 0;border-bottom:none;min-height:220px;font-family:'Space Grotesk',sans-serif;resize:vertical"
+                          oninput="updateCharCount()"></textarea>
+
+                <!-- Editor toolbar -->
+                <div class="editor-toolbar">
+                    <button type="button" class="editor-btn" title="Bold" onclick="wrapText('**')"><i class="fas fa-bold"></i></button>
+                    <button type="button" class="editor-btn" title="Italic" onclick="wrapText('*')"><i class="fas fa-italic"></i></button>
+                    <button type="button" class="editor-btn" title="Bullet" onclick="wrapText('\n- ')"><i class="fas fa-list-ul"></i></button>
+                    <button type="button" class="editor-btn" title="Numbered" onclick="wrapText('\n1. ')"><i class="fas fa-list-ol"></i></button>
+                    <button type="button" class="editor-btn" title="Code Block" onclick="wrapText('\n```\n', '\n```\n')"><i class="fas fa-code"></i></button>
+                    <div style="margin-left:auto;padding-right:8px;font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted)" id="char-counter">0 / 2000</div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;flex-wrap:wrap;gap:0.75rem">
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-save-draft" onclick="saveDraftAlert()">
+                    <i class="fas fa-floppy-disk"></i> Save Draft
+                </button>
+                <div style="display:flex;gap:0.65rem">
+                    @if (Model.CurrentNumber > 1)
+                    {
+                        <a href="/Interview/Question?sessionId=@Model.SessionId&questionNumber=@(Model.CurrentNumber - 1)"
+                           class="btn btn-secondary" id="btn-prev">
+                            <i class="fas fa-chevron-left"></i> Prev
+                        </a>
+                    }
+                    <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-answer" onclick="showLoading()">
+                        Submit &amp; Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading state -->
+            <div id="ai-loading-state" style="display:none;text-align:center;padding:2.5rem 1rem">
+                <div style="display:inline-block;width:32px;height:32px;border:2px solid rgba(74, 124, 248, 0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:1.25rem"></div>
+                <div class="shimmer-container">
+                    <p class="shimmer-text shimmer-cycle"
+                       data-phrases='["Agent is thinking...", "Processing your response...", "Analyzing syntax and logic...", "Evaluating technical accuracy...", "Generating feedback...", "Almost done..."]'
+                       style="font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:600">
+                        Agent is thinking...
+                    </p>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    @@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+@section Scripts {
+<script>
+    let timeLeft = 25 * 60;
+    const timerText = document.getElementById('countdown-timer');
+    const timerFill = document.getElementById('timer-bar-fill');
+
+    const interval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            timerText.textContent = '00:00';
+            timerFill.style.width = '0%';
+            timerText.style.color = 'var(--danger)';
+            return;
+        }
+        timeLeft--;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerText.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        const pct = (timeLeft / (25 * 60)) * 100;
+        timerFill.style.width = `${pct}%`;
+        if (pct < 20) timerText.style.color = 'var(--danger)';
+        else if (pct < 50) timerText.style.color = 'var(--warning)';
+    }, 1000);
+
+    function wrapText(prefix, suffix = prefix) {
+        const ta = document.getElementById('user-answer');
+        const s = ta.selectionStart, e = ta.selectionEnd;
+        const sel = ta.value.substring(s, e);
+        ta.value = ta.value.substring(0, s) + prefix + sel + suffix + ta.value.substring(e);
+        ta.focus();
+        ta.setSelectionRange(s + prefix.length, s + prefix.length + sel.length);
+        updateCharCount();
+    }
+
+    function updateCharCount() {
+        document.getElementById('char-counter').textContent =
+            `${document.getElementById('user-answer').value.length} / 2000`;
+    }
+
+    function saveDraftAlert() {
+        alert('Draft saved to browser storage!');
+    }
+
+    function showLoading() {
+        const answer = document.getElementById('user-answer').value.trim();
+        if (!answer) return;
+        const btn = document.getElementById('btn-submit-answer');
+        const loader = document.getElementById('ai-loading-state');
+        setTimeout(() => {
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+        }, 10);
+    }
+</script>
+}

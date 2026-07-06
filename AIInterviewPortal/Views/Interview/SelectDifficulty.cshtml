@@ -1,0 +1,142 @@
+@{
+    ViewData["Title"] = "Choose Difficulty";
+    Layout = "_Layout";
+    var techId   = ViewBag.TechId;
+    var techName = ViewBag.TechName;
+    var techColor = ViewBag.TechColor;
+}
+
+<div class="page-container" style="max-width:680px">
+    <!-- Back -->
+    <div style="margin-bottom:1.5rem">
+        <a href="/Interview/SelectTech" class="btn btn-secondary btn-icon" aria-label="Go Back" style="width:36px;height:36px">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+    </div>
+
+    <div class="page-header" style="margin-bottom:2rem">
+        <div class="section-eyebrow">Step 2 of 2 &nbsp;·&nbsp; @techName</div>
+        <h1 class="page-title">Choose <span class="page-title-accent">Difficulty</span></h1>
+        <p class="page-subtitle">Select the challenge level for your @techName session</p>
+    </div>
+
+    <form method="post" action="/Interview/StartSession" id="difficulty-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="techId" value="@techId" />
+        <input type="hidden" name="difficulty" id="selected-difficulty" value="Intermediate" />
+
+        <!-- Difficulty Cards -->
+        <div style="display:flex;flex-direction:column;gap:0.85rem;margin-bottom:2rem">
+
+            <!-- Beginner -->
+            <div class="glass-card diff-card" onclick="selectDifficulty('Beginner', this)"
+                 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-left:3px solid var(--success);transition:all 0.22s ease">
+                <div style="display:flex;align-items:center;gap:1.1rem">
+                    <div style="width:38px;height:38px;border-radius:6px;background:rgba(34,211,122,0.1);display:flex;align-items:center;justify-content:center">
+                        <i class="fas fa-seedling" style="color:var(--success)"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif;font-size:1rem;margin-bottom:2px">Easy</div>
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-secondary)">Basic concepts &amp; fundamentals</div>
+                    </div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--success);font-weight:700">~10 Qs</div>
+            </div>
+
+            <!-- Intermediate (default selected) -->
+            <div class="glass-card diff-card selected-diff" onclick="selectDifficulty('Intermediate', this)"
+                 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-left:3px solid var(--gold);transition:all 0.22s ease">
+                <div style="display:flex;align-items:center;gap:1.1rem">
+                    <div style="width:38px;height:38px;border-radius:6px;background:rgba(255,186,20,0.1);display:flex;align-items:center;justify-content:center">
+                        <i class="fas fa-laptop-code" style="color:var(--gold)"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif;font-size:1rem;margin-bottom:2px">Medium <span style="font-size:0.68rem;background:rgba(255,186,20,0.12);color:var(--gold);padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace;margin-left:4px">RECOMMENDED</span></div>
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-secondary)">Intermediate coding &amp; architecture</div>
+                    </div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--gold);font-weight:700">~10 Qs</div>
+            </div>
+
+            <!-- Advanced -->
+            <div class="glass-card diff-card" onclick="selectDifficulty('Advanced', this)"
+                 style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-left:3px solid var(--danger);transition:all 0.22s ease">
+                <div style="display:flex;align-items:center;gap:1.1rem">
+                    <div style="width:38px;height:38px;border-radius:6px;background:rgba(255,78,78,0.1);display:flex;align-items:center;justify-content:center">
+                        <i class="fas fa-brain" style="color:var(--danger)"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif;font-size:1rem;margin-bottom:2px">Hard</div>
+                        <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-secondary)">Advanced system design &amp; edge cases</div>
+                    </div>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--danger);font-weight:700">~10 Qs</div>
+            </div>
+        </div>
+
+        <!-- Session Settings -->
+        <div class="glass-card" style="padding:1.5rem;max-width:100%">
+            <div class="section-eyebrow" style="margin-bottom:1rem">
+                <i class="fas fa-sliders-h"></i> Session Config
+            </div>
+
+            <div class="form-group" style="margin-bottom:1.25rem">
+                <label class="form-label" for="questionCount">Number of Questions</label>
+                <select class="form-select form-control-noicon" id="questionCount" name="questionCount">
+                    <option value="5">5 Questions (~10 min)</option>
+                    <option value="10" selected>10 Questions (~20 min)</option>
+                    <option value="15">15 Questions (~30 min)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full btn-lg" id="btn-start"
+                    style="margin-top:0.25rem" onclick="showLoading()">
+                <i class="fas fa-terminal"></i> Launch Interview
+            </button>
+
+            <!-- Loading state -->
+            <div id="loading-state" style="display:none;text-align:center;padding:2rem 0">
+                <div style="display:inline-block;width:28px;height:28px;border:2px solid rgba(74, 124, 248, 0.1);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:1.1rem"></div>
+                <div class="shimmer-container">
+                    <p class="shimmer-text shimmer-cycle" 
+                       data-phrases='["Connecting to Gemini AI...", "Analyzing technology specifications...", "Generating tailored questions...", "Structuring interview parameters...", "Almost ready..."]'
+                       style="font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:600">
+                        Connecting to Gemini AI...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .selected-diff {
+        background: rgba(255, 186, 20, 0.04) !important;
+        border-color: rgba(255, 186, 20, 0.25) !important;
+        box-shadow: 0 0 0 1px rgba(255, 186, 20, 0.1) !important;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+@section Scripts {
+<script>
+    function selectDifficulty(diff, card) {
+        document.querySelectorAll('.diff-card').forEach(c => c.classList.remove('selected-diff'));
+        card.classList.add('selected-diff');
+        document.getElementById('selected-difficulty').value = diff;
+    }
+
+    function showLoading() {
+        const btn = document.getElementById('btn-start');
+        const loader = document.getElementById('loading-state');
+        setTimeout(() => {
+            btn.disabled = true;
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+        }, 10);
+    }
+</script>
+}

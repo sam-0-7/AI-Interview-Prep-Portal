@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AI-powered interview preparation portal with real-time Gemini AI feedback for technical interview practice." />
+    <title>@ViewData["Title"] – AI Interview Portal</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <link rel="stylesheet" href="~/css/glass.css" asp-append-version="true" />
+    }
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+<!-- Subtle gradient background -->
+<div class="hex-grid-bg"></div>
+<div class="ambient-light">
+    <div class="ambient-column-1"></div>
+    <div class="ambient-column-2"></div>
+</div>
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <nav class="navbar">
+        <div style="display:flex;align-items:center;gap:0.75rem">
+            <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="/" class="navbar-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="brand-text-container">
+                    <span class="brand-main-text">AI Interview</span>
+                    <span class="brand-sub-text">Prep Portal</span>
+                </div>
+            </a>
+        </div>
+
+        <span id="page-breadcrumb"></span>
+
+        <div class="navbar-user">
+            <button class="notification-bell" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                <div class="bell-badge"></div>
+            </button>
+            <a href="/Account/Profile" style="text-decoration:none">
+                <div class="user-profile-avatar" title="Profile">
+                    @User.Identity.Name?[0].ToString().ToUpper()
+                    <div class="user-status-dot"></div>
+                </div>
+            </a>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div>
+                <div class="sidebar-section-label">Main</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="/Dashboard" class="sidebar-link" id="nav-dashboard">
+                            <i class="fas fa-chart-pie"></i> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Interview/SelectTech" class="sidebar-link" id="nav-interview">
+                            <i class="fas fa-terminal"></i> Practice
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Progress" class="sidebar-link" id="nav-progress">
+                            <i class="fas fa-chart-line"></i> Progress
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="sidebar-section-label">More</div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="/Progress/Leaderboard" class="sidebar-link" id="nav-leaderboard">
+                            <i class="fas fa-trophy"></i> Leaderboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/Account/Profile" class="sidebar-link" id="nav-profile">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <form method="post" action="/Account/Logout" style="margin:0">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-secondary btn-full" id="btn-logout"
+                        style="font-size:0.875rem;font-family:'Inter',sans-serif">
+                    <i class="fas fa-sign-out-alt"></i> Sign out
+                </button>
+            </form>
+        </aside>
+
+        <main class="main-content">
+            @if (TempData["Error"] != null)
+            {
+                <div style="padding:1.5rem 1.75rem 0">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>@TempData["Error"]</span>
+                    </div>
+                </div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+}
+else
+{
+    <div class="background">
+        <div class="blob blob1"></div>
+        <div class="blob blob2"></div>
+        <div class="blob blob3"></div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg glass-nav">
+        <div class="container">
+            <a class="navbar-brand logo" href="/">
+                <div class="logo-circle">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <h4>AI Interview</h4>
+                    <small>Prep Portal</small>
+                </div>
+            </a>
+            <button class="navbar-toggler bg-white"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#menu"
+                    aria-label="Toggle menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menu">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#technologies">Technologies</a>
+                    </li>
+                </ul>
+                <a href="/Account/Login" class="nav-link" id="nav-login">Sign in</a>
+                <a href="/Account/Register" class="start-btn" style="text-decoration:none">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    @if (TempData["Error"] != null)
+    {
+        <div style="position:relative;z-index:2;padding:0 1.5rem;margin-top:1rem;max-width:1200px;margin-left:auto;margin-right:auto">
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>@TempData["Error"]</span>
+            </div>
+        </div>
+    }
+
+    @RenderBody()
+
+    <footer>
+        <div class="container">
+            <p>© 2026 AI Interview Portal</p>
+        </div>
+    </footer>
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
