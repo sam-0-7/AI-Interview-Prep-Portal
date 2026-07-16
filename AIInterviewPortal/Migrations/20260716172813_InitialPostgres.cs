@@ -1,9 +1,10 @@
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-#pragma warning disable CA1814
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
 namespace AIInterviewPortal.Migrations
 {
@@ -187,8 +188,8 @@ namespace AIInterviewPortal.Migrations
                     Difficulty = table.Column<string>(type: "text", nullable: false),
                     QuestionCount = table.Column<int>(type: "integer", nullable: false),
                     CompletedQuestions = table.Column<int>(type: "integer", nullable: false),
-                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
                     AverageScore = table.Column<double>(type: "double precision", nullable: true),
+                    IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
                     StartedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -238,7 +239,7 @@ namespace AIInterviewPortal.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     QuestionId = table.Column<int>(type: "integer", nullable: false),
                     UserAnswer = table.Column<string>(type: "text", nullable: false),
-                    AIScore = table.Column<int>(type: "integer", nullable: false),
+                    AIScore = table.Column<double>(type: "double precision", nullable: false),
                     AIFeedback = table.Column<string>(type: "text", nullable: false),
                     MissingPoints = table.Column<string>(type: "text", nullable: false),
                     SuggestedAnswer = table.Column<string>(type: "text", nullable: false),
@@ -255,57 +256,122 @@ namespace AIInterviewPortal.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            // ── Seed Technologies ──────────────────────────────────────────────
             migrationBuilder.InsertData(
                 table: "Technologies",
                 columns: new[] { "TechId", "Color", "Description", "IconClass", "Name" },
                 values: new object[,]
                 {
-                    { 1,  "#512BD4", "ASP.NET Core, C#, EF Core, CLR, Dependency Injection",        "fab fa-windows",    ".NET"       },
-                    { 2,  "#ED8B00", "Spring Boot, JVM, OOP, Collections, Multithreading",           "fab fa-java",       "Java"       },
-                    { 3,  "#3776AB", "Django, Flask, Data Structures, OOP, Libraries",               "fab fa-python",     "Python"     },
-                    { 4,  "#CC2927", "Queries, Joins, Stored Procedures, Indexing, Normalization",   "fas fa-database",   "SQL"        },
-                    { 5,  "#9B4F96", "LINQ, Async/Await, OOP, Design Patterns, Delegates",          "fas fa-code",       "C#"         },
-                    { 6,  "#F7DF1E", "ES6+, Promises, DOM, React, Node.js Fundamentals",            "fab fa-js-square",  "JavaScript" },
-                    { 7,  "#E34F26", "HTML5, Semantic Elements, Forms, Accessibility, SEO",         "fab fa-html5",      "HTML"       },
-                    { 8,  "#1572B6", "Flexbox, Grid, Animations, Media Queries, BEM Methodology",   "fab fa-css3-alt",   "CSS"        },
-                    { 9,  "#61DAFB", "Components, Hooks, State Management, JSX, Virtual DOM",       "fab fa-react",      "React"      },
-                    { 10, "#DD0031", "Components, Services, RxJS, Dependency Injection, Routing",   "fab fa-angular",    "Angular"    },
-                    { 11, "#339933", "Express, REST APIs, Middleware, Event Loop, Streams",         "fab fa-node-js",    "Node.js"    },
-                    { 12, "#3178C6", "Types, Interfaces, Generics, Enums, Type Guards",             "fas fa-code",       "TypeScript" },
-                    { 13, "#47A248", "Documents, Aggregation Pipeline, Indexing, Replica Sets",     "fas fa-leaf",       "MongoDB"    },
-                    { 14, "#FF9900", "EC2, S3, Lambda, IAM, CloudFormation Basics",                "fab fa-aws",        "AWS"        },
-                    { 15, "#00599C", "Pointers, Memory Management, OOP, STL, Templates",            "fas fa-code",       "C++"        }
+                    { 1, "#512BD4", "ASP.NET Core, C#, EF Core, CLR, Dependency Injection", "fab fa-windows", ".NET" },
+                    { 2, "#ED8B00", "Spring Boot, JVM, OOP, Collections, Multithreading", "fab fa-java", "Java" },
+                    { 3, "#3776AB", "Django, Flask, Data Structures, OOP, Libraries", "fab fa-python", "Python" },
+                    { 4, "#CC2927", "Queries, Joins, Stored Procedures, Indexing, Normalization", "fas fa-database", "SQL" },
+                    { 5, "#9B4F96", "LINQ, Async/Await, OOP, Design Patterns, Delegates", "fas fa-code", "C#" },
+                    { 6, "#F7DF1E", "ES6+, Promises, DOM, React, Node.js Fundamentals", "fab fa-js-square", "JavaScript" },
+                    { 7, "#E34F26", "HTML5, Semantic Elements, Forms, Accessibility, SEO", "fab fa-html5", "HTML" },
+                    { 8, "#1572B6", "Flexbox, Grid, Animations, Media Queries, BEM Methodology", "fab fa-css3-alt", "CSS" },
+                    { 9, "#61DAFB", "Components, Hooks, State Management, JSX, Virtual DOM", "fab fa-react", "React" },
+                    { 10, "#DD0031", "Components, Services, RxJS, Dependency Injection, Routing", "fab fa-angular", "Angular" },
+                    { 11, "#339933", "Express, REST APIs, Middleware, Event Loop, Streams", "fab fa-node-js", "Node.js" },
+                    { 12, "#3178C6", "Types, Interfaces, Generics, Enums, Type Guards", "fas fa-code", "TypeScript" },
+                    { 13, "#47A248", "Documents, Aggregation Pipeline, Indexing, Replica Sets", "fas fa-leaf", "MongoDB" },
+                    { 14, "#FF9900", "EC2, S3, Lambda, IAM, CloudFormation Basics", "fab fa-aws", "AWS" },
+                    { 15, "#00599C", "Pointers, Memory Management, OOP, STL, Templates", "fas fa-code", "C++" }
                 });
 
-            // ── Indexes ────────────────────────────────────────────────────────
-            migrationBuilder.CreateIndex(name: "IX_Answers_QuestionId",           table: "Answers",          column: "QuestionId",  unique: true);
-            migrationBuilder.CreateIndex(name: "IX_AspNetRoleClaims_RoleId",      table: "AspNetRoleClaims", column: "RoleId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserClaims_UserId",      table: "AspNetUserClaims", column: "UserId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserLogins_UserId",      table: "AspNetUserLogins", column: "UserId");
-            migrationBuilder.CreateIndex(name: "IX_AspNetUserRoles_RoleId",       table: "AspNetUserRoles",  column: "RoleId");
-            migrationBuilder.CreateIndex(name: "RoleNameIndex",                   table: "AspNetRoles",      column: "NormalizedName", unique: true);
-            migrationBuilder.CreateIndex(name: "EmailIndex",                      table: "AspNetUsers",      column: "NormalizedEmail");
-            migrationBuilder.CreateIndex(name: "UserNameIndex",                   table: "AspNetUsers",      column: "NormalizedUserName", unique: true);
-            migrationBuilder.CreateIndex(name: "IX_InterviewSessions_TechId",     table: "InterviewSessions", column: "TechId");
-            migrationBuilder.CreateIndex(name: "IX_InterviewSessions_UserId",     table: "InterviewSessions", column: "UserId");
-            migrationBuilder.CreateIndex(name: "IX_Questions_SessionId",          table: "Questions",         column: "SessionId");
+            migrationBuilder.CreateIndex(
+                name: "IX_Answers_QuestionId",
+                table: "Answers",
+                column: "QuestionId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetRoleClaims_RoleId",
+                table: "AspNetRoleClaims",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserClaims_UserId",
+                table: "AspNetUserClaims",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserLogins_UserId",
+                table: "AspNetUserLogins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserRoles_RoleId",
+                table: "AspNetUserRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InterviewSessions_TechId",
+                table: "InterviewSessions",
+                column: "TechId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InterviewSessions_UserId",
+                table: "InterviewSessions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Questions_SessionId",
+                table: "Questions",
+                column: "SessionId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "Answers");
-            migrationBuilder.DropTable(name: "AspNetRoleClaims");
-            migrationBuilder.DropTable(name: "AspNetUserClaims");
-            migrationBuilder.DropTable(name: "AspNetUserLogins");
-            migrationBuilder.DropTable(name: "AspNetUserRoles");
-            migrationBuilder.DropTable(name: "AspNetUserTokens");
-            migrationBuilder.DropTable(name: "Questions");
-            migrationBuilder.DropTable(name: "InterviewSessions");
-            migrationBuilder.DropTable(name: "Technologies");
-            migrationBuilder.DropTable(name: "AspNetRoles");
-            migrationBuilder.DropTable(name: "AspNetUsers");
+            migrationBuilder.DropTable(
+                name: "Answers");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Questions");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "InterviewSessions");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Technologies");
         }
     }
 }
