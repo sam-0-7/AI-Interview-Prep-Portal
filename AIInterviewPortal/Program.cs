@@ -17,11 +17,11 @@ if (connectionString.StartsWith("postgres://") || connectionString.StartsWith("p
 {
     var databaseUri = new Uri(connectionString);
     var userInfo = databaseUri.UserInfo.Split(':');
-    var username = userInfo[0];
-    var password = userInfo.Length > 1 ? userInfo[1] : "";
+    var username = Uri.UnescapeDataString(userInfo[0]);
+    var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
     var host = databaseUri.Host;
     var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
-    var database = databaseUri.LocalPath.TrimStart('/');
+    var database = Uri.UnescapeDataString(databaseUri.LocalPath.TrimStart('/'));
 
     connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
 }
