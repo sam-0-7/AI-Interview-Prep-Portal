@@ -16,142 +16,125 @@
     var weeklyLbls = System.Text.Json.JsonSerializer.Serialize(Model.WeeklyLabels);
 }
 
-<div class="page-container">
-    <!-- Header -->
-    <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
-        <div>
-            <div class="section-eyebrow"><i class="fas fa-chart-line"></i> Analytics</div>
-            <h1 class="page-title" style="margin-bottom:0.25rem">Progress <span class="page-title-accent">Tracking</span></h1>
-            <p class="page-subtitle">Your improvement across all interview sessions</p>
-        </div>
-        <a href="/Interview/SelectTech" class="btn btn-primary" id="btn-new-practice-progress">
-            <i class="fas fa-terminal"></i> New Practice
-        </a>
-    </div>
+<div class="panel-header" style="margin-bottom: 25px;">
+    <h2>Progress & Analytics</h2>
+    <p>Visualize your path to improvement across all mock interview sessions.</p>
+</div>
 
-    <!-- Stats -->
-    <div class="stats-grid animate-in">
-        <div class="stat-card" style="--stat-color-rgb: 255, 186, 20">
-            <div class="stat-icon" style="background:rgba(255,186,20,0.1);color:var(--gold)">
-                <i class="fas fa-layer-group"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:var(--gold)" data-count="@Model.TotalSessions">0</div>
-                <div class="stat-label">Sessions</div>
-            </div>
+<!-- Stats Bar -->
+<div class="stats-bar animate-in">
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(141, 123, 255, 0.15); color: var(--accent-purple);">
+            <i class="fa-solid fa-clipboard-check"></i>
         </div>
-        <div class="stat-card" style="--stat-color-rgb: 34, 211, 122">
-            <div class="stat-icon" style="background:rgba(34,211,122,0.1);color:var(--success)">
-                <i class="fas fa-star"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:var(--success)" data-count="@overallPctScore%">0%</div>
-                <div class="stat-label">Avg Score</div>
-            </div>
-        </div>
-        <div class="stat-card" style="--stat-color-rgb: 0, 201, 167">
-            <div class="stat-icon" style="background:rgba(0,201,167,0.1);color:var(--teal)">
-                <i class="fas fa-list-check"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:var(--teal)" data-count="@Model.TotalQuestions">0</div>
-                <div class="stat-label">Questions</div>
-            </div>
-        </div>
-        <div class="stat-card" style="--stat-color-rgb: 255, 107, 43">
-            <div class="stat-icon" style="background:rgba(255,107,43,0.1);color:var(--ember)">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:var(--ember)">18h 30m</div>
-                <div class="stat-label">Total Time</div>
-            </div>
+        <div class="stat-item-info">
+            <h2>@Model.TotalSessions</h2>
+            <p>Sessions</p>
         </div>
     </div>
-
-    <!-- Charts Row -->
-    <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:1.25rem;margin-bottom:1.25rem" class="animate-in stagger-1">
-
-        <!-- Score Trend -->
-        <div class="chart-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
-                <div class="chart-title" style="margin-bottom:0"><i class="fas fa-chart-line"></i> Score Trend</div>
-                <select style="background:var(--bg-base);border:1px solid var(--border);border-radius:var(--radius-xs);color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-size:0.7rem;padding:4px 8px;outline:none">
-                    <option>This Month</option>
-                    <option>This Year</option>
-                </select>
-            </div>
-            <div style="height:210px;position:relative">
-                <canvas id="scoreTrendChart" height="210"></canvas>
-            </div>
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(79, 216, 255, 0.15); color: var(--accent-cyan);">
+            <i class="fa-solid fa-star"></i>
         </div>
+        <div class="stat-item-info">
+            <h2>@overallPctScore%</h2>
+            <p>Avg Score</p>
+        </div>
+    </div>
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(81, 207, 98, 0.15); color: var(--success);">
+            <i class="fa-solid fa-check-double"></i>
+        </div>
+        <div class="stat-item-info">
+            <h2>@Model.TotalQuestions</h2>
+            <p>Questions</p>
+        </div>
+    </div>
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(255, 241, 118, 0.15); color: var(--accent-yellow);">
+            <i class="fa-solid fa-hourglass-half"></i>
+        </div>
+        <div class="stat-item-info">
+            <h2>1.5h</h2>
+            <p>Total Time</p>
+        </div>
+    </div>
+</div>
 
-        <!-- Tech Breakdown -->
-        <div class="glass-card" style="display:flex;flex-direction:column;gap:0.9rem;padding:1.5rem">
-            <div class="chart-title" style="margin-bottom:0.25rem"><i class="fas fa-microchip"></i> By Technology</div>
-            <div style="display:flex;flex-direction:column;gap:10px">
-                @{
-                    var techColors = new Dictionary<string, string> {
-                        { ".NET", "var(--gold)" }, { "Java", "var(--teal)" },
-                        { "Python", "var(--success)" }, { "SQL", "var(--ember)" },
-                        { "JavaScript", "#FEF08A" }
-                    };
-                }
-                @foreach (var tp in techPerformances)
-                {
-                    var tColor = techColors.GetValueOrDefault(tp.Key, "var(--gold)");
-                    <div>
-                        <div class="skill-bar-header">
-                            <span style="color:var(--text-primary);font-family:'Space Grotesk',sans-serif">@tp.Key</span>
-                            <span style="color:@tColor">@tp.Value%</span>
-                        </div>
-                        <div class="skill-bar-bg">
-                            <div class="skill-bar-fill" style="width:@tp.Value%;background:@tColor"></div>
-                        </div>
-                    </div>
-                }
-            </div>
+<div class="dashboard-row-grid mt-4">
+    <!-- Chart Panel -->
+    <div class="dashboard-panel-card">
+        <div class="panel-header">
+            <h3>Score Trend Over Time</h3>
+        </div>
+        <div style="height: 250px; position: relative;">
+            <canvas id="scoreTrendChart"></canvas>
         </div>
     </div>
 
-    <!-- Weak Areas -->
-    <div class="glass-card animate-in stagger-2" style="padding:1.5rem 1.75rem">
-        <div class="section-eyebrow" style="margin-bottom:1rem">
-            <i class="fas fa-triangle-exclamation" style="color:var(--danger)"></i> Weak Areas
+    <!-- Tech Skill Progression -->
+    <div class="dashboard-panel-card">
+        <div class="panel-header">
+            <h3>Skills Snapshot</h3>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-            @foreach (var wa in weakAreas)
+        <div style="display:flex; flex-direction:column; gap:15px; margin-top:10px;">
+            @{
+                var techColors = new Dictionary<string, string> {
+                    { ".NET", "#4F8CFF" }, { "Java", "#FF5722" },
+                    { "Python", "#FFD600" }, { "SQL", "#4CAF50" },
+                    { "JavaScript", "#FFDF00" }
+                };
+            }
+            @foreach (var tp in techPerformances)
             {
-                <span style="background:rgba(255,78,78,0.06);border:1px solid rgba(255,78,78,0.2);color:#FF8080;padding:5px 14px;border-radius:var(--radius-xs);font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:600;display:inline-flex;align-items:center;gap:6px">
-                    <span style="width:5px;height:5px;border-radius:50%;background:var(--danger);display:inline-block"></span>
-                    @wa
-                </span>
+                var tColor = techColors.GetValueOrDefault(tp.Key, "#4F8CFF");
+                <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;">
+                        <span style="font-weight: 500;">@tp.Key</span>
+                        <span style="color: @tColor; font-weight: 600;">@tp.Value%</span>
+                    </div>
+                    <div class="skill-bar-bg" style="height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: 4px; overflow: hidden;">
+                        <div class="skill-bar-fill" style="width: @tp.Value%; height: 100%; background: @tColor; border-radius: 4px;"></div>
+                    </div>
+                </div>
             }
         </div>
     </div>
 </div>
 
+<div class="dashboard-panel-card mt-4">
+    <div class="panel-header">
+        <h3>Areas Needing Improvement</h3>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;">
+        @foreach (var wa in weakAreas)
+        {
+            <span class="missing-point-tag" style="background: rgba(255, 107, 107, 0.1); color: var(--danger); border-color: rgba(255, 107, 107, 0.2); padding: 8px 16px; border-radius: 50px; font-weight: 600;">
+                <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px"></i> @wa
+            </span>
+        }
+    </div>
+</div>
+
 @section Scripts {
 <script>
-    Chart.defaults.color = '#5A5A4A';
-    Chart.defaults.borderColor = 'rgba(255,218,100,0.04)';
-
     const trendCtx = document.getElementById('scoreTrendChart');
     if (trendCtx) {
         new Chart(trendCtx, {
             type: 'line',
             data: {
-                labels: ['1 May','5 May','10 May','15 May','20 May','25 May','30 May'],
+                labels: ['Session 1','Session 2','Session 3','Session 4','Session 5','Session 6','Session 7'],
                 datasets: [{
                     label: 'Score %',
-                    data: [75, 82, 80, 87, 85, 90, 85],
-                    borderColor: '#FFBA14',
-                    backgroundColor: 'rgba(255,186,20,0.05)',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#0d0f0e',
-                    pointBorderColor: '#FFBA14',
+                    data: [65, 72, 70, 78, 75, 84, 82],
+                    borderColor: '#8D7BFF',
+                    backgroundColor: 'rgba(141, 123, 255, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#8D7BFF',
                     pointBorderWidth: 2,
-                    pointRadius: 4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
                     tension: 0.35,
                     fill: true
                 }]
@@ -161,8 +144,15 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    y: { min: 0, max: 100, ticks: { stepSize: 20, font: { family: 'JetBrains Mono', size: 10 } }, grid: { color: 'rgba(255,218,100,0.04)' } },
-                    x: { grid: { display: false }, ticks: { font: { family: 'JetBrains Mono', size: 10 } } }
+                    y: { 
+                        min: 0, max: 100, 
+                        grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                        ticks: { color: 'rgba(255, 255, 255, 0.6)' } 
+                    },
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { color: 'rgba(255, 255, 255, 0.6)' } 
+                    }
                 }
             }
         });

@@ -1,3 +1,4 @@
+@inject Microsoft.AspNetCore.Identity.UserManager<AIInterviewPortal.Models.Domain.ApplicationUser> UserManager
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,97 +31,62 @@
     <div class="blob blob2"></div>
     <div class="blob blob3"></div>
 </div>
-
 @if (User.Identity?.IsAuthenticated == true)
 {
-    <nav class="navbar">
-        <div style="display:flex;align-items:center;gap:0.75rem">
-            <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
-                <i class="fas fa-bars"></i>
-            </button>
-            <a href="/" class="navbar-brand">
-                <div class="brand-icon">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <div class="brand-text-container">
-                    <span class="brand-main-text">AI Interview</span>
-                    <span class="brand-sub-text">Prep Portal</span>
-                </div>
-            </a>
-        </div>
+    var user = await UserManager.GetUserAsync(User);
+    var fullName = user?.FullName ?? User.Identity?.Name ?? "User";
+    var initials = !string.IsNullOrEmpty(fullName) ? string.Concat(fullName.Split(' ').Select(s => s[0])).ToUpper() : "U";
+    if (initials.Length > 2) initials = initials.Substring(0, 2);
 
-        <span id="page-breadcrumb"></span>
-
-        <div class="navbar-user">
-            <button class="notification-bell" aria-label="Notifications">
-                <i class="fas fa-bell"></i>
-                <div class="bell-badge"></div>
-            </button>
-            <a href="/Account/Profile" style="text-decoration:none">
-                <div class="user-profile-avatar" title="Profile">
-                    @User.Identity.Name?[0].ToString().ToUpper()
-                    <div class="user-status-dot"></div>
-                </div>
-            </a>
-        </div>
-    </nav>
-
-    <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-    <div class="app-container">
-        <aside class="sidebar">
-            <div>
-                <div class="sidebar-section-label">Main</div>
-                <ul class="sidebar-menu">
-                    <li>
-                        <a href="/Dashboard" class="sidebar-link" id="nav-dashboard">
-                            <i class="fas fa-chart-pie"></i> Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/Interview/SelectTech" class="sidebar-link" id="nav-interview">
-                            <i class="fas fa-terminal"></i> Practice
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/Progress" class="sidebar-link" id="nav-progress">
-                            <i class="fas fa-chart-line"></i> Progress
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="sidebar-section-label">More</div>
-                <ul class="sidebar-menu">
-                    <li>
-                        <a href="/Progress/Leaderboard" class="sidebar-link" id="nav-leaderboard">
-                            <i class="fas fa-trophy"></i> Leaderboard
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/Account/Profile" class="sidebar-link" id="nav-profile">
-                            <i class="fas fa-user"></i> Profile
-                        </a>
-                    </li>
-                </ul>
+    <div class="dashboard-container">
+        <aside class="glass-sidebar">
+            <div class="sidebar-profile">
+                <div class="sidebar-avatar">@initials</div>
+                <h4>@fullName</h4>
+                <p>@User.Identity.Name</p>
             </div>
-
-            <form method="post" action="/Account/Logout" style="margin:0">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-secondary btn-full" id="btn-logout"
-                        style="font-size:0.875rem;font-family:'Inter',sans-serif">
-                    <i class="fas fa-sign-out-alt"></i> Sign out
-                </button>
-            </form>
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="/Dashboard" class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" style="text-decoration:none">
+                        <i class="fa-solid fa-chart-pie"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="/Interview/SelectTech" class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Interview" && ViewContext.RouteData.Values["Action"]?.ToString() == "SelectTech" ? "active" : "")" style="text-decoration:none">
+                        <i class="fa-solid fa-terminal"></i> Practice Session
+                    </a>
+                </li>
+                <li>
+                    <a href="/Progress" class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Progress" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" style="text-decoration:none">
+                        <i class="fa-solid fa-chart-line"></i> Streaks & Progress
+                    </a>
+                </li>
+                <li>
+                    <a href="/Progress/Leaderboard" class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Progress" && ViewContext.RouteData.Values["Action"]?.ToString() == "Leaderboard" ? "active" : "")" style="text-decoration:none">
+                        <i class="fa-solid fa-trophy"></i> Leaderboard
+                    </a>
+                </li>
+                <li>
+                    <a href="/Account/Profile" class="sidebar-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")" style="text-decoration:none">
+                        <i class="fa-solid fa-user"></i> My Profile
+                    </a>
+                </li>
+                <li>
+                    <form method="post" action="/Account/Logout" style="margin-top: 30px; display:block">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="sidebar-item" style="background:none; border:none; color:var(--danger); width:100%; text-align:left; padding:12px 18px; cursor:pointer">
+                            <i class="fa-solid fa-sign-out-alt"></i> Sign Out
+                        </button>
+                    </form>
+                </li>
+            </ul>
         </aside>
-
-        <main class="main-content">
+        <main class="dashboard-main">
             @if (TempData["Error"] != null)
             {
-                <div style="padding:1.5rem 1.75rem 0">
-                    <div class="alert alert-danger">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>@TempData["Error"]</span>
-                    </div>
+                <div class="alert alert-danger" style="background: rgba(185, 28, 28, 0.2); border: 1px solid rgba(185, 28, 28, 0.4); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>@TempData["Error"]</span>
                 </div>
             }
             @RenderBody()
@@ -129,51 +95,31 @@
 }
 else
 {
-    <div class="background">
-        <div class="blob blob1"></div>
-        <div class="blob blob2"></div>
-        <div class="blob blob3"></div>
-    </div>
-
-    <nav class="navbar navbar-expand-lg glass-nav">
-        <div class="container">
-            <a class="navbar-brand logo" href="/">
-                <div class="logo-circle">
-                    <i class="fa-solid fa-brain"></i>
-                </div>
-                <div>
-                    <h4>AI Interview</h4>
-                    <small>Prep Portal</small>
-                </div>
-            </a>
-            <button class="navbar-toggler bg-white"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#menu"
-                    aria-label="Toggle menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="menu">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/#features">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/#technologies">Technologies</a>
-                    </li>
-                </ul>
-                <a href="/Account/Login" class="nav-link" id="nav-login">Sign in</a>
-                <a href="/Account/Register" class="start-btn" style="text-decoration:none">Get Started</a>
+    <nav class="glass-nav">
+        <a class="logo" href="/">
+            <div class="logo-circle">
+                <i class="fa-solid fa-brain"></i>
             </div>
+            <div>
+                <h4>AI Interview</h4>
+                <small>Prep Portal</small>
+            </div>
+        </a>
+        <ul class="nav-links">
+            <li><a class="nav-link" href="/">Home</a></li>
+            <li><a class="nav-link" href="/#features">Features</a></li>
+            <li><a class="nav-link" href="/#technologies">Technologies</a></li>
+        </ul>
+        <div style="display:flex;align-items:center;gap:15px">
+            <a href="/Account/Login" class="nav-link" id="nav-login" style="text-decoration:none">Sign in</a>
+            <a href="/Account/Register" class="start-btn" style="text-decoration:none">Get Started</a>
         </div>
     </nav>
 
     @if (TempData["Error"] != null)
     {
-        <div style="position:relative;z-index:2;padding:0 1.5rem;margin-top:1rem;max-width:1200px;margin-left:auto;margin-right:auto">
-            <div class="alert alert-danger">
+        <div style="position:relative;z-index:2;padding:0 1.5rem;margin-top:15px;max-width:1200px;margin-left:auto;margin-right:auto">
+            <div class="alert alert-danger" style="background: rgba(185, 28, 28, 0.2); border: 1px solid rgba(185, 28, 28, 0.4); color: white; padding: 15px; border-radius: 12px;">
                 <i class="fas fa-exclamation-circle"></i>
                 <span>@TempData["Error"]</span>
             </div>
@@ -182,10 +128,8 @@ else
 
     @RenderBody()
 
-    <footer>
-        <div class="container">
-            <p>© 2026 AI Interview Portal</p>
-        </div>
+    <footer style="text-align: center; padding: 30px; background: rgba(255,255,255,0.05); margin-top: 40px; width:100%;">
+        <p>© 2026 AI Interview Prep Portal. All rights reserved.</p>
     </footer>
 }
 

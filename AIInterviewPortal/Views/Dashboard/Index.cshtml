@@ -2,195 +2,217 @@
 @{
     ViewData["Title"] = "Dashboard";
     Layout = "_Layout";
-    var weeklyJson = System.Text.Json.JsonSerializer.Serialize(Model.WeeklyScores);
-    var weeklyLbls = System.Text.Json.JsonSerializer.Serialize(Model.WeeklyLabels);
-    var techJson   = System.Text.Json.JsonSerializer.Serialize(Model.TechScores);
-    var techLbls   = System.Text.Json.JsonSerializer.Serialize(Model.TechLabels);
+    
+    // Process completed dates for streak calendar
+    var completedDates = System.Text.Json.JsonSerializer.Serialize(
+        Model.RecentSessions
+            .Where(s => s.IsCompleted && s.CompletedAt.HasValue)
+            .Select(s => s.CompletedAt!.Value.ToString("yyyy-MM-dd"))
+            .ToList()
+    );
+
+    // Process chart progression data
+    var chartSessions = Model.RecentSessions.Where(s => s.IsCompleted && s.AverageScore.HasValue).Take(10).ToList();
+    var chartScores = System.Text.Json.JsonSerializer.Serialize(chartSessions.Select(s => s.AverageScore!.Value).Reverse().ToList());
+    var chartLabels = System.Text.Json.JsonSerializer.Serialize(chartSessions.Select(s => s.Technology?.Name ?? "").Reverse().ToList());
 }
 
-<div class="page-container">
-
-    <!-- Welcome Banner -->
-    <div class="welcome-banner animate-in" style="margin-bottom:1.75rem">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem">
-            <div>
-                <div class="section-eyebrow" style="margin-bottom:0.3rem">
-                    <i class="fas fa-terminal"></i> Session Overview
-                </div>
-                <h1 class="page-title" style="font-size:1.7rem;margin-bottom:0.2rem">
-                    Welcome back, <span class="page-title-accent">@Model.UserName.Split(' ')[0]</span>
-                </h1>
-                <p class="page-subtitle">Your prep metrics at a glance — keep the streak alive.</p>
-            </div>
-            <a href="/Interview/SelectTech" class="btn btn-primary btn-lg" id="btn-new-interview">
-                <i class="fas fa-terminal"></i> New Interview
-            </a>
+<!-- Stats Bar -->
+<div class="stats-bar animate-in">
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(79, 216, 255, 0.15); color: var(--accent-cyan);">
+            <i class="fa-solid fa-star"></i>
+        </div>
+        <div class="stat-item-info">
+            <h2>@Model.AverageScore.ToString("F1")</h2>
+            <p>Average Score</p>
         </div>
     </div>
-
-    <!-- Stats Row -->
-    <div class="stats-grid animate-in stagger-1">
-        <!-- Total Interviews -->
-        <div class="stat-card" style="--stat-color-rgb: 255, 186, 20">
-            <div class="stat-icon" style="background:rgba(255,186,20,0.1);color:var(--gold)">
-                <i class="fas fa-layer-group"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:var(--gold)" data-count="@Model.TotalSessions">0</div>
-                <div class="stat-label">Total Sessions</div>
-            </div>
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(141, 123, 255, 0.15); color: var(--accent-purple);">
+            <i class="fa-solid fa-clipboard-check"></i>
         </div>
-
-        <!-- Average Score -->
-        @{
-            var rawAvgVal  = Model.AverageScore > 0 ? (Model.AverageScore * 10) : 0;
-            var scoreColor = Model.AverageScore >= 7 ? "var(--success)" : Model.AverageScore >= 4 ? "var(--warning)" : "var(--danger)";
-            var scoreRgb   = Model.AverageScore >= 7 ? "34,211,122" : Model.AverageScore >= 4 ? "255,186,20" : "255,78,78";
-        }
-        <div class="stat-card" style="--stat-color-rgb: @scoreRgb">
-            <div class="stat-icon" style="background:rgba(@scoreRgb, 0.1);color:@scoreColor">
-                <i class="fas fa-star"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:@scoreColor" data-count="@rawAvgVal%">0%</div>
-                <div class="stat-label">Avg. Score</div>
-            </div>
-        </div>
-
-        <!-- Questions Answered -->
-        <div class="stat-card" style="--stat-color-rgb: 0, 201, 167">
-            <div class="stat-icon" style="background:rgba(0,201,167,0.1);color:var(--teal)">
-                <i class="fas fa-list-check"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:var(--teal)" data-count="@Model.TotalQuestions">0</div>
-                <div class="stat-label">Questions Done</div>
-            </div>
-        </div>
-
-        <!-- Streak -->
-        <div class="stat-card" style="--stat-color-rgb: 255, 107, 43">
-            <div class="stat-icon" style="background:rgba(255,107,43,0.1);color:var(--ember)">
-                <i class="fas fa-fire-flame-curved"></i>
-            </div>
-            <div>
-                <div class="stat-value" style="color:var(--ember)" data-count="7">0</div>
-                <div class="stat-label">Day Streak</div>
-            </div>
+        <div class="stat-item-info">
+            <h2>@Model.TotalSessions</h2>
+            <p>Sessions Run</p>
         </div>
     </div>
-
-    <!-- Charts + Skill Snapshot Row -->
-    <div style="display:grid;grid-template-columns:1.25fr 0.75fr;gap:1.25rem;margin-bottom:1.25rem" class="animate-in stagger-2">
-
-        <!-- Performance Chart -->
-        <div class="chart-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
-                <div class="chart-title"><i class="fas fa-chart-line"></i> Performance Trend</div>
-                <select style="background:var(--bg-base);border:1px solid var(--border);border-radius:4px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;font-size:0.7rem;padding:4px 8px;outline:none">
-                    <option>This Week</option>
-                    <option>This Month</option>
-                </select>
-            </div>
-            <canvas id="weeklyChart" height="200"></canvas>
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(255, 241, 118, 0.15); color: var(--accent-yellow);">
+            <i class="fa-solid fa-fire"></i>
         </div>
-
-        <!-- Skill Snapshot -->
-        <div style="display:flex;flex-direction:column;gap:1rem">
-            <!-- Top Strength -->
-            <div class="glass-card" style="flex:1;padding:1.25rem 1.4rem">
-                <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--success);margin-bottom:0.6rem">
-                    <i class="fas fa-arrow-trend-up" style="margin-right:5px"></i>TOP STRENGTH
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.6rem">
-                    <span style="font-weight:700;font-size:1.05rem;color:var(--text-primary);font-family:'Sora',sans-serif">C#</span>
-                    <span style="font-weight:700;font-size:0.95rem;color:var(--success);font-family:'JetBrains Mono',monospace">90%</span>
-                </div>
-                <div class="skill-bar-bg">
-                    <div class="skill-bar-fill" style="width:90%;background:linear-gradient(to right, #059669, var(--success))"></div>
-                </div>
-            </div>
-
-            <!-- Needs Improvement -->
-            <div class="glass-card" style="flex:1;padding:1.25rem 1.4rem">
-                <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--danger);margin-bottom:0.6rem">
-                    <i class="fas fa-arrow-trend-down" style="margin-right:5px"></i>NEEDS WORK
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.6rem">
-                    <span style="font-weight:700;font-size:1.05rem;color:var(--text-primary);font-family:'Sora',sans-serif">System Design</span>
-                    <span style="font-weight:700;font-size:0.95rem;color:var(--danger);font-family:'JetBrains Mono',monospace">45%</span>
-                </div>
-                <div class="skill-bar-bg">
-                    <div class="skill-bar-fill" style="width:45%;background:linear-gradient(to right, #b91c1c, var(--danger))"></div>
-                </div>
-            </div>
+        <div class="stat-item-info">
+            <h2>@((Model.RecentSessions.Any(s => s.IsCompleted && s.CompletedAt.HasValue && s.CompletedAt.Value.Date == DateTime.UtcNow.Date)) ? "1" : "0") Day</h2>
+            <p>Current Streak</p>
         </div>
     </div>
-
-    <!-- Continue Banner -->
-    <div class="glass-card animate-in stagger-3"
-         style="padding:1.4rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem;border-color:rgba(255,186,20,0.15);background:rgba(255,186,20,0.03)">
-        <div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:5px">
-                ▶ Continue Practice
-            </div>
-            <h3 style="font-size:1.1rem;font-weight:700;color:var(--text-primary);font-family:'Sora',sans-serif">
-                .NET Interview — <span style="color:var(--gold)">Easy</span>
-            </h3>
+    <div class="stat-item-card">
+        <div class="stat-item-icon" style="background: rgba(81, 207, 98, 0.15); color: var(--success);">
+            <i class="fa-solid fa-ranking-star"></i>
         </div>
-        <a href="/Interview/SelectTech" class="btn btn-primary" id="btn-continue-practice">
-            Resume <i class="fas fa-arrow-right"></i>
-        </a>
+        <div class="stat-item-info">
+            <h2>#1</h2>
+            <p>Board Rank</p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-row-grid mt-4">
+    <!-- Chart Panel -->
+    <div class="dashboard-panel-card">
+        <div class="panel-header">
+            <h3>Score Progression (Recent Interviews)</h3>
+        </div>
+        <div style="height: 250px; position: relative;">
+            <canvas id="dashboardChart"></canvas>
+        </div>
+    </div>
+    <!-- Daily Streak Panel -->
+    <div class="dashboard-panel-card">
+        <div class="panel-header">
+            <h3>Daily Streak Calendar</h3>
+            <span style="font-weight: 700; color: var(--accent-yellow);" id="streak-panel-days">Streak Calendar</span>
+        </div>
+        <p style="font-size: 0.8rem; opacity: 0.8; margin-bottom: 20px;">Complete an interview selection to extend your streak.</p>
+        <div class="streak-grid" id="streak-calendar-grid">
+            <!-- Generated Dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Recent Session Logs -->
+<div class="dashboard-panel-card mt-4">
+    <div class="panel-header">
+        <h3>Recent Interview Log</h3>
+        <a href="/Interview/SelectTech" class="start-btn" style="padding: 10px 24px; font-size: 0.85rem; text-decoration:none">New Practice</a>
+    </div>
+    <div class="session-table-wrapper">
+        <table class="session-table">
+            <thead>
+                <tr>
+                    <th>Technology</th>
+                    <th>Difficulty</th>
+                    <th>Questions</th>
+                    <th>Avg. Score</th>
+                    <th>Completed At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.RecentSessions.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center" style="opacity: 0.7; padding: 25px 0;">No mock sessions completed yet. Click New Practice to initiate.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var s in Model.RecentSessions.Take(5))
+                    {
+                        var diffClass = s.Difficulty.ToLower() == "beginner" ? "easy" : s.Difficulty.ToLower() == "intermediate" ? "medium" : "hard";
+                        <tr>
+                            <td style="font-weight: 600;">@(s.Technology?.Name ?? ".NET")</td>
+                            <td><span class="badge-difficulty @diffClass">@s.Difficulty</span></td>
+                            <td>@s.QuestionCount</td>
+                            <td style="font-weight: 700; color: @(s.AverageScore >= 8 ? "var(--success)" : s.AverageScore >= 6 ? "var(--accent-cyan)" : "var(--accent-yellow)");">
+                                @(s.AverageScore.HasValue ? s.AverageScore.Value.ToString("F1") + "/10" : "In Progress")
+                            </td>
+                            <td style="font-size:0.8rem; opacity:0.8;">@(s.CompletedAt?.ToString("MMM dd, yyyy HH:mm") ?? "Active")</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
 @section Scripts {
 <script>
-    Chart.defaults.color = '#5A5A4A';
-    Chart.defaults.borderColor = 'rgba(255,218,100,0.04)';
+    // Generate daily streak calendar
+    function renderDailyStreakGrid(containerId, streakCalendar) {
+        const grid = document.getElementById(containerId);
+        grid.innerHTML = "";
+        
+        const daysOfWeek = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+        
+        // Render columns headers
+        daysOfWeek.forEach(day => {
+            const header = document.createElement("div");
+            header.style.textAlign = "center";
+            header.style.fontSize = "0.78rem";
+            header.style.fontWeight = "600";
+            header.style.opacity = "0.6";
+            header.innerText = day;
+            grid.appendChild(header);
+        });
+        
+        const now = new Date();
+        const startDate = new Date();
+        startDate.setDate(now.getDate() - 14 - now.getDay());
+        
+        for (let i = 0; i < 21; i++) {
+            const checkDate = new Date(startDate);
+            checkDate.setDate(startDate.getDate() + i);
+            const checkStr = checkDate.toISOString().split('T')[0];
+            const dayNum = checkDate.getDate();
+            
+            const cell = document.createElement("div");
+            cell.className = "streak-day-cell";
+            cell.innerText = dayNum;
+            
+            if (streakCalendar.includes(checkStr)) {
+                cell.classList.add("active");
+            }
+            
+            grid.appendChild(cell);
+        }
+    }
 
-    const weeklyCtx = document.getElementById('weeklyChart');
-    if (weeklyCtx) {
-        new Chart(weeklyCtx, {
-            type: 'line',
-            data: {
-                labels: @Html.Raw(weeklyLbls),
-                datasets: [{
-                    label: 'Score',
-                    data: @Html.Raw(weeklyJson),
-                    borderColor: '#FFBA14',
-                    backgroundColor: 'rgba(255,186,20,0.06)',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#0d0f0e',
-                    pointBorderColor: '#FFBA14',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.4,
-                    fill: true
-                }]
+    const streakDates = @Html.Raw(completedDates);
+    renderDailyStreakGrid("streak-calendar-grid", streakDates);
+
+    // Render Dashboard Charts
+    const ctx = document.getElementById("dashboardChart").getContext("2d");
+    const scores = @Html.Raw(chartScores);
+    const labels = @Html.Raw(chartLabels);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels.length > 0 ? labels : ["None"],
+            datasets: [{
+                label: 'Avg. Score',
+                data: scores.length > 0 ? scores : [0],
+                borderColor: '#4F8CFF',
+                backgroundColor: 'rgba(79, 140, 255, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#4F8CFF',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.35,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        min: 0,
-                        max: 10,
-                        ticks: {
-                            stepSize: 2,
-                            font: { family: 'JetBrains Mono', size: 10 }
-                        },
-                        grid: { color: 'rgba(255,218,100,0.04)' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { font: { family: 'JetBrains Mono', size: 10 } }
-                    }
+            scales: {
+                y: {
+                    min: 0,
+                    max: 10,
+                    grid: { color: 'rgba(255, 255, 255, 0.08)' },
+                    ticks: { color: 'rgba(255, 255, 255, 0.6)' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: 'rgba(255, 255, 255, 0.6)' }
                 }
             }
-        });
-    }
+        }
+    });
 </script>
 }
