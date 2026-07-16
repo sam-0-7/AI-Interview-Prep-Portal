@@ -12,6 +12,20 @@ var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("No database connection string found.");
 
+// Parse postgres:// or postgresql:// URI format into Npgsql ADO.NET format
+if (connectionString.StartsWith("postgres://") || connectionString.StartsWith("postgresql://"))
+{
+    var databaseUri = new Uri(connectionString);
+    var userInfo = databaseUri.UserInfo.Split(':');
+    var username = userInfo[0];
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
+    var host = databaseUri.Host;
+    var port = databaseUri.Port > 0 ? databaseUri.Port : 5432;
+    var database = databaseUri.LocalPath.TrimStart('/');
+
+    connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true";
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
