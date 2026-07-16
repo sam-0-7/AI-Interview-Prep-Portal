@@ -6,6 +6,13 @@
 *.userosscache
 *.sln.docstates
 
+# SECRETS — Never commit these
+appsettings.json
+appsettings.Production.json
+appsettings.Staging.json
+.env
+secrets.json
+
 # IDEs
 .vs/
 .vscode/

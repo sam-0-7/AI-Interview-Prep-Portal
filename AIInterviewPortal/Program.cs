@@ -13,11 +13,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // ── Identity ──────────────────────────────────────────────────────────────────
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
+    // ── Password Policy ───────────────────────────────────────────────────
     options.Password.RequireDigit           = true;
-    options.Password.RequiredLength         = 6;
+    options.Password.RequiredLength         = 8;     // increased from 6
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireUppercase       = false;
+    options.Password.RequireUppercase       = true;  // require at least one uppercase
     options.SignIn.RequireConfirmedAccount  = false;
+
+    // ── Brute-Force Lockout ───────────────────────────────────────────────
+    options.Lockout.DefaultLockoutTimeSpan  = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers      = true;
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
