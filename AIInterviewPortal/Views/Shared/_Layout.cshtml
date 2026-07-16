@@ -16,20 +16,16 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @if (User.Identity?.IsAuthenticated != true)
-    {
-        <link rel="stylesheet" href="~/css/glass.css" asp-append-version="true" />
-    }
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
 
-<!-- Subtle gradient background -->
-<div class="hex-grid-bg"></div>
-<div class="ambient-light">
-    <div class="ambient-column-1"></div>
-    <div class="ambient-column-2"></div>
+<!-- Ambient Animated Background Blobs -->
+<div class="background">
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+    <div class="blob blob3"></div>
 </div>
 
 @if (User.Identity?.IsAuthenticated == true)
